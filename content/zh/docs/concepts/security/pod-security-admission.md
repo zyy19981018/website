@@ -33,13 +33,13 @@ Kubernetes [Pod 安全性标准（Security Standards）](/zh/docs/concepts/secur
 为 Pod 定义不同的隔离级别。这些标准能够让你以一种清晰、一致的方式定义如何限制 Pod 行为。
 
 <!--
-As a Beta feature, Kubernetes offers a built-in _Pod Security_ {{< glossary_tooltip
+As a beta feature, Kubernetes offers a built-in _Pod Security_ {{< glossary_tooltip
 text="admission controller" term_id="admission-controller" >}}, the successor
 to [PodSecurityPolicies](/docs/concepts/security/pod-security-policy/). Pod security restrictions
 are applied at the {{< glossary_tooltip text="namespace" term_id="namespace" >}} level when pods
 are created.
 -->
-作为一项 Beta 功能特性，Kubernetes 提供一种内置的 _Pod 安全性_ 
+作为一项 beta 功能特性，Kubernetes 提供一种内置的 _Pod 安全性_ 
 {{< glossary_tooltip text="准入控制器" term_id="admission-controller" >}}，
 作为 [PodSecurityPolicies](/zh/docs/concepts/security/pod-security-policy/)
 特性的后继演化版本。Pod 安全性限制是在 Pod 被创建时在
@@ -57,39 +57,40 @@ PodSecurityPolicy API 已经被废弃，会在 Kubernetes v1.25 发行版中
 <!-- body -->
 
 <!--
-## Enabling the `PodSecurity` admission plugin
+## {{% heading "prerequisites" %}}
 
-In v1.23, the `PodSecurity` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/)
-is a Beta feature and is enabled by default.
+To use this mechanism, your cluster must enforce Pod Security admission.
 
-In v1.22, the `PodSecurity` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/)
-is an Alpha feature and must be enabled in `kube-apiserver` in order to use the built-in admission plugin.
+### Built-in Pod Security admission enforcement
 -->
-## 启用 `PodSecurity` 准入插件   {#enabling-the-podsecurity-admission-plugin}
+## {{% heading "prerequisites" %}}
 
-在 v1.23 中，`PodSecurity` [特性门控](/zh/docs/reference/command-line-tools-reference/feature-gates/)
-是一项 Beta 功能特性，默认被启用。
+要使用此机制，您的集群必须强制执行 Pod 安全准入
 
-在 v1.22 中，`PodSecurity` [特性门控](/zh/docs/reference/command-line-tools-reference/feature-gates/)
-是一项 Alpha 功能特性，必须在 `kube-apiserver` 上启用才能使用内置的准入插件。
-
-```shell
---feature-gates="...,PodSecurity=true"
-```
+### 内置 Pod 安全准入强制执行
 
 <!--
-## Alternative: installing the `PodSecurity` admission webhook {#webhook}
-
-For environments where the built-in `PodSecurity` admission plugin cannot be used,
-either because the cluster is older than v1.22, or the `PodSecurity` feature cannot be enabled,
-the `PodSecurity` admission logic is also available as a Beta [validating admission webhook](https://git.k8s.io/pod-security-admission/webhook).
+In Kubernetes v{{< skew currentVersion >}}, the `PodSecurity` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/)
+is a beta feature and is enabled by default. You must have this feature gate enabled.
+If you are running a different version of Kubernetes, consult the documentation for that release.
 -->
-## 替代方案：安装 `PodSecurity` 准入 Webhook   {#webhook}
+在 Kubernetes v{{< skew currentVersion >}} 中，`PodSecurity` [特性门](/docs/reference/command-line-tools-reference/feature-gates/)
+是一项测试版功能，默认启用。 你必须启用此功能门。
+如果你运行的是不同版本的 Kubernetes，请查阅该版本的文档。
 
-对于无法应用内置 `PodSecurity` 准入插件的环境，无论是因为集群版本低于 v1.22，
-或者 `PodSecurity` 特性无法被启用，都可以使用 Beta 版本的
-[验证性准入 Webhook](https://git.k8s.io/pod-security-admission/webhook)。
-来使用 `PodSecurity` 准入逻辑。
+
+
+<!--
+### Alternative: installing the `PodSecurity` admission webhook {#webhook}
+
+The `PodSecurity` admission logic is also available as a [validating admission webhook](https://git.k8s.io/pod-security-admission/webhook). This implementation is also beta.
+For environments where the built-in `PodSecurity` admission plugin cannot be enabled, you can instead enable that logic via a validating admission webhook.
+-->
+### 替代方案：安装 `PodSecurity` 准入 Webhook   {#webhook}
+
+`PodSecurity` 准入逻辑也可用作 [验证性准入 Webhook](https://git.k8s.io/pod-security-admission/webhook)。 此实现也是测试版。
+对于无法应用内置 `PodSecurity` 准入插件的环境，你可以改为通过验证准入 webhook 启用该逻辑。
+
 
 <!--
 A pre-built container image, certificate generation scripts, and example manifests
@@ -115,6 +116,8 @@ regenerate the certificate or remove the webhook in favor of the built-in admiss
 所生成的证书合法期限为 2 年。在证书过期之前，
 需要重新生成证书或者去掉 Webhook 以使用内置的准入查件。
 {{< /note >}}
+
+<!-- body -->
 
 <!--
 ## Pod Security levels
