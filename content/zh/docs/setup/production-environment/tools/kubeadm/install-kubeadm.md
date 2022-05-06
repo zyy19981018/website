@@ -130,91 +130,119 @@ nc 127.0.0.1 6443
 ```
 
 <!--
-The pod network plugin you use (see below) may also require certain ports to be
+The pod network plugin you use may also require certain ports to be
 open. Since this differs with each pod network plugin, please see the
 documentation for the plugins about what port(s) those need.
 -->
-你使用的 Pod 网络插件 (详见后续章节) 也可能需要开启某些特定端口。由于各个 Pod 网络插件的功能都有所不同，
+你使用的 Pod 网络插件也可能需要开启某些特定端口。由于各个 Pod 网络插件的功能都有所不同，
 请参阅他们各自文档中对端口的要求。
 
 <!--
-## Installing runtime {#installing-runtime}
+## Installing a container runtime {#installing-runtime}
 
 To run containers in Pods, Kubernetes uses a
 {{< glossary_tooltip term_id="container-runtime" text="container runtime" >}}.
 -->
-## 安装 runtime{#installing-runtime}
+## 安装容器 runtime{#installing-runtime}
 
 为了在 Pod 中运行容器，Kubernetes 使用
 {{< glossary_tooltip term_id="container-runtime" text="容器运行时（Container Runtime）" >}}。
 
-{{< tabs name="container-runtimes" >}}
-{{% tab name="Linux 节点" %}}
 <!--
 By default, Kubernetes uses the
 {{< glossary_tooltip term_id="cri" text="Container Runtime Interface">}} (CRI)
 to interface with your chosen container runtime.
 
 If you don't specify a runtime, kubeadm automatically tries to detect an installed
-container runtime by scanning through a list of well known Unix domain sockets.
-The following table lists container runtimes that kubeadm looks for, and their associated socket paths:
-
-| Runtime    | Domain Socket                   |
-|------------|---------------------------------|
-| Docker     | /var/run/dockershim.sock            |
-| containerd | /run/containerd/containerd.sock |
-| CRI-O      | /var/run/crio/crio.sock         |
+container runtime by scanning through a list of known endpoints.
 -->
 默认情况下，Kubernetes 使用
 {{< glossary_tooltip term_id="cri" text="容器运行时接口（Container Runtime Interface，CRI）" >}}
 来与你所选择的容器运行时交互。
 
 如果你不指定运行时，则 kubeadm 会自动尝试检测到系统上已经安装的运行时，
-方法是扫描一组众所周知的 Unix 域套接字。
-下面的表格列举了一些 kubeadm 查找的容器运行时及其对应的套接字路径：
-
-| 运行时     | 域套接字                         |
-|------------|----------------------------------|
-| Docker Engine  | `/var/run/dockershim.sock`        |
-| containerd     | `/run/containerd/containerd.sock` |
-| CRI-O          | `/var/run/crio/crio.sock`         |
+方法是扫描一组已知端点。
 
 <!--
-<br />
-If both Docker Engine and containerd are detected, kubeadm will give precedence to Docker Engine. This is
-needed because Docker 18.09 ships with containerd and both are detectable even if you only
-installed Docker.
-**If any other two or more runtimes are detected, kubeadm exits with an error.**
-
-The kubelet can integrate with Docker Engine using the deprecated `dockershim` adapter (the dockershim is part of the kubelet itself).
+If multiple or no container runtimes are detected kubeadm will throw an error
+and will request that you specify which one you want to use.
 
 See [container runtimes](/docs/setup/production-environment/container-runtimes/)
 for more information.
 -->
-<br/>
-如果同时检测到 Docker Engine 和 containerd，kubeadm 将优先考虑 Docker Engine。
-这是必然的，因为 Docker 18.09 附带了 containerd 并且两者都是可以检测到的，
-即使你仅安装了 Docker。
-**如果检测到其他两个或多个运行时，kubeadm 输出错误信息并退出。**
-
-kubelet 可以使用已弃用的 dockershim 适配器与 Docker Engine 集成（dockershim 是 kubelet 本身的一部分）。
+如果检测到多个容器运行时或没有检测到容器运行时，kubeadm 将抛出错误
+并会要求你指定要使用哪一个。
 
 参阅[容器运行时](/zh/docs/setup/production-environment/container-runtimes/)
 以了解更多信息。
+
+<!--
+{< note >}}
+
+Docker Engine does not implement the [CRI](/docs/concepts/architecture/cri/)
+which is a requirement for a container runtime to work with Kubernetes.
+For that reason, an additional service [cri-dockerd](https://github.com/Mirantis/cri-dockerd)
+has to be installed. cri-dockerd is a project based on the legacy built-in
+Docker Engine support that was [removed](/dockershim) from the kubelet in version 1.24.
+
+{{< /note >}}
+-->
+{< note >}}
+Docker 引擎没有实现[CRI](/docs/concepts/architecture/cri/)
+这是容器运行时与 Kubernetes 一起工作的要求。
+出于这个原因，一个额外的服务 [cri-dockerd](https://github.com/Mirantis/cri-dockerd)必须安装。 
+cri-dockerd 是一个基于遗留的内置 Docker 引擎支持的项目，该支持已从 1.24 版本的 kubelet 中[删除](/dockershim)。
+{{< /note >}}
+
+<!--
+The tables below include the known endpoints for supported operating systems:
+
+{{< tabs name="container_runtime" >}}
+{{% tab name="Linux" %}}
+
+{{< table >}}
+| Runtime                            | Path to Unix domain socket                   |
+|------------------------------------|----------------------------------------------|
+| containerd                         | `unix:///var/run/containerd/containerd.sock` |
+| CRI-O                              | `unix:///var/run/crio/crio.sock`             |
+| Docker Engine (using cri-dockerd)  | `unix:///var/run/cri-dockerd.sock`           |
+{{< /table >}}
+-->
+
+下表包括受支持操作系统的已知端点：
+
+{{< tabs name="容器运行时" >}}
+{{% tab name="Linux" %}}
+
+{{< table >}}
+| Runtime                            | Path to Unix domain socket                   |
+|------------------------------------|----------------------------------------------|
+| containerd                         | `unix:///var/run/containerd/containerd.sock` |
+| CRI-O                              | `unix:///var/run/crio/crio.sock`             |
+| Docker Engine (using cri-dockerd)  | `unix:///var/run/cri-dockerd.sock`           |
+{{< /table >}}
+
+<!--
+{{% /tab %}}
+{{% tab name="Windows" %}}
+
+{{< table >}}
+| Runtime                            | Path to Windows named pipe                   |
+|------------------------------------|----------------------------------------------|
+| containerd                         | `npipe:////./pipe/containerd-containerd`     |
+| Docker Engine (using cri-dockerd)  | `npipe:////./pipe/cri-dockerd`               |
+{{< /table >}}
+-->
 
 {{% /tab %}}
-{{% tab name="其它操作系统" %}}
-<!--
-By default, kubeadm uses {{< glossary_tooltip term_id="docker" >}} as the container runtime.
-The kubelet can integrate with Docker Engine using the deprecated `dockershim` adapter (the dockershim is part of the kubelet itself).
+{{% tab name="Windows" %}}
+{{< table >}}
+| Runtime                            | Path to Windows named pipe                   |
+|------------------------------------|----------------------------------------------|
+| containerd                         | `npipe:////./pipe/containerd-containerd`     |
+| Docker Engine (using cri-dockerd)  | `npipe:////./pipe/cri-dockerd`               |
+{{< /table >}}
 
-See [container runtimes](/docs/setup/production-environment/container-runtimes/)
-for more information.
--->
-默认情况下， kubeadm 使用 {{< glossary_tooltip term_id="docker" >}} 作为容器运行时。
-kubelet 可以使用已弃用的 dockershim 适配器与 Docker Engine 集成（dockershim 是 kubelet 本身的一部分）。
-参阅[容器运行时](/zh/docs/setup/production-environment/container-runtimes/)
-以了解更多信息。
 
 {{% /tab %}}
 {{< /tabs >}}
